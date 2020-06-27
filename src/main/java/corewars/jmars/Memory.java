@@ -24,19 +24,11 @@
  * SUCH DAMAGE.
  *
  */
- /* Class for corewar memory */
+/* Class for corewar memory */
 package corewars.jmars;
 
 public class Memory {
     // fields of a memory cell
-
-    public byte opcode;
-    public byte modifier;
-    public byte aIndir, bIndir; // Immediate, Direct or Indirect
-    public byte aTarget, bTarget; // A or B indirection
-    public byte aTiming, bTiming; // Pre or Post
-    public byte aAction, bAction; // decrement or increment
-    public int aValue, bValue;
 
     // valid opcodes
     final public static byte MOV = 0;
@@ -48,7 +40,7 @@ public class Memory {
     final public static byte JMZ = 6;
     final public static byte JMN = 7;
     final public static byte DJN = 8;
-    final public static byte CMP = 9;	// two names for same instruction
+    final public static byte CMP = 9;    // two names for same instruction
     final public static byte SEQ = 9;
     final public static byte SNE = 10;
     final public static byte SLT = 11;
@@ -58,7 +50,6 @@ public class Memory {
     final public static byte NOP = 15;
     final public static byte LDP = 16;
     final public static byte STP = 17;
-
     // valid modifiers
     final public static byte mA = 0;
     final public static byte mB = 1;
@@ -67,24 +58,27 @@ public class Memory {
     final public static byte mF = 4;
     final public static byte mX = 5;
     final public static byte mI = 6;
-
     // valid Indirections
     final public static byte IMMEDIATE = 0;
     final public static byte DIRECT = 1;
     final public static byte INDIRECT = 2;
-
     // valid Targets
     final public static byte A = 0;
     final public static byte B = 1;
-
     // valid Timings
     final public static byte PRE = 0;
     final public static byte POST = 1;
-
     // valid Actions
     final public static byte NONE = 0;
     final public static byte DECREMENT = 1;
     final public static byte INCREMENT = 2;
+    public byte opcode;
+    public byte modifier;
+    public byte aIndir, bIndir; // Immediate, Direct or Indirect
+    public byte aTarget, bTarget; // A or B indirection
+    public byte aTiming, bTiming; // Pre or Post
+    public byte aAction, bAction; // decrement or increment
+    public int aValue, bValue;
 
     public Memory() {
         opcode = DAT;
@@ -121,22 +115,18 @@ public class Memory {
     }
 
     public boolean equals(Memory comp) {
-        if ((opcode != comp.opcode)
-                || (modifier != comp.modifier)
-                || (aIndir != comp.aIndir)
-                || (aAction != comp.aAction)
-                || (aTarget != comp.aTarget)
-                || (aTiming != comp.aTiming)
-                || (aValue != comp.aValue)
-                || (bIndir != comp.bIndir)
-                || (bAction != comp.bAction)
-                || (bTarget != comp.bTarget)
-                || (bTiming != comp.bTiming)
-                || (bValue != comp.bValue)) {
-            return false;
-        }
-
-        return true;
+        return (opcode == comp.opcode)
+                && (modifier == comp.modifier)
+                && (aIndir == comp.aIndir)
+                && (aAction == comp.aAction)
+                && (aTarget == comp.aTarget)
+                && (aTiming == comp.aTiming)
+                && (aValue == comp.aValue)
+                && (bIndir == comp.bIndir)
+                && (bAction == comp.bAction)
+                && (bTarget == comp.bTarget)
+                && (bTiming == comp.bTiming)
+                && (bValue == comp.bValue);
     }
 
     public boolean equals(Object obj) {
@@ -431,4 +421,4 @@ public class Memory {
         return str.toString();
     }
 
-};
+}

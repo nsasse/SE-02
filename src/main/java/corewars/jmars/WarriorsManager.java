@@ -14,7 +14,7 @@ public class WarriorsManager {
     public WarriorsManager() {
     }
 
-    public Result<WarriorObj[]> loadWarriors(Config config, VM MARS, WarriorObj[] allWarriors) {
+    Result<WarriorObj[]> loadWarriors(Config config, VM MARS, WarriorObj[] allWarriors) {
 
         WarriorObj[] warriors = new WarriorObj[allWarriors.length];
         System.arraycopy(allWarriors, 0, warriors, 0, allWarriors.length);
@@ -25,7 +25,7 @@ public class WarriorsManager {
             return new Result<>(false, "ERROR: could not load warrior 1.");
         }
 
-        for (int i = 1, r = 0; i < config.getNumWarriors(); i++) {
+        for (int i = 1, r; i < config.getNumWarriors(); i++) {
             boolean validSpot;
             do {
                 validSpot = true;
@@ -46,10 +46,10 @@ public class WarriorsManager {
                 return new Result<>(false, "ERROR: could not load warrior " + (i + 1) + ".");
             }
         }
-        return new Result(true, warriors);
+        return new Result<>(true, warriors);
     }
 
-    public Result<WarriorObj[]> readWarriorsFromFile(Config config, Assembler parser, Color[][] wColors, int numDefinedColors, String[] args) {
+    Result<WarriorObj[]> readWarriorsFromFile(Config config, Assembler parser, Color[][] wColors, int numDefinedColors, String[] args) {
 
         WarriorObj[] allWarriors = new WarriorObj[config.getNumWarriors()];
 

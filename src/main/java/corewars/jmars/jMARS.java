@@ -44,29 +44,25 @@ import java.util.*;
 public class jMARS extends Panel implements WindowListener, FrontEndManager {
 
     // constants
-    static final int numDefinedColors = 4;
-    static final Color[][] wColors = {{Color.green, Color.yellow},
+    private static final int numDefinedColors = 4;
+    private static final Color[][] wColors = {{Color.green, Color.yellow},
             {Color.red, Color.magenta},
             {Color.cyan, Color.blue},
             {Color.gray, Color.darkGray}};
-    static Frame myFrame;
-    static jMARS myApp;
-    static Thread myThread;
-    static boolean exitFlag;
-    // Application specific variables
-    String[] args;
-    /**
-     * Load warriors into core
-     */
+    private static Frame myFrame;
+    private static jMARS myApp;
+    private static Thread myThread;
+    private static boolean exitFlag;
 
-    WarriorObj[] warriors;
-    CoreDisplay coreDisplay;
-    RoundCycleCounter roundCycleCounter;
-    VM MARS;
-    int runWarriors;
-    Vector stepListeners;
-    Vector cycleListeners;
-    Vector roundListeners;
+    private String[] args;
+
+    private WarriorObj[] warriors;
+    private CoreDisplay coreDisplay;
+    private VM MARS;
+    private int runWarriors;
+    private Vector stepListeners;
+    private Vector cycleListeners;
+    private Vector roundListeners;
 
     public jMARS() {
         stepListeners = new Vector();
@@ -102,7 +98,7 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
     /**
      * Initialization function for the application.
      */
-    void applicationInit(Config config) {
+    private void applicationInit(Config config) {
 
         Assembler parser = parseConstants(config);
 
@@ -120,7 +116,7 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
         if (config.useGui()) {
             coreDisplay = new CoreDisplay(this, this, config.getCoreSize(), 100);
         }
-        roundCycleCounter = new RoundCycleCounter(this, this);
+        RoundCycleCounter roundCycleCounter = new RoundCycleCounter(this, this);
         validate();
         repaint();
         update(getGraphics());
@@ -159,7 +155,7 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
     /**
      * main function and loop for jMARS. Runs the battles and handles display.
      */
-    public void run(Config config, WarriorObj[] allWarriors) {
+    private void run(Config config, WarriorObj[] allWarriors) {
         HashMap<String, Integer> statistic = new HashMap<>();
         Date startTime;
         Date endTime;
@@ -199,9 +195,9 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
                     break;
                 }
             }
-            for (int warIdx = 0; warIdx < warriors.length; warIdx++) {
-                String name = warriors[warIdx].getName();
-                Integer count = statistic.getOrDefault(name, Integer.valueOf(0));
+            for (WarriorObj warrior : warriors) {
+                String name = warrior.getName();
+                Integer count = statistic.getOrDefault(name, 0);
                 count++;
                 statistic.put(name, count);
             }
@@ -248,7 +244,6 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
      */
     public void update(Graphics g) {
         paintComponents(g);
-        return;
     }
 
     /**
@@ -278,21 +273,21 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
         roundListeners.addElement(r);
     }
 
-    protected void notifyStepListeners(StepReport step) {
+    private void notifyStepListeners(StepReport step) {
         for (Enumeration e = stepListeners.elements(); e.hasMoreElements(); ) {
             StepListener j = (StepListener) e.nextElement();
             j.stepProcess(step);
         }
     }
 
-    protected void notifyCycleListeners(int cycle) {
+    private void notifyCycleListeners(int cycle) {
         for (Enumeration e = cycleListeners.elements(); e.hasMoreElements(); ) {
             CycleListener j = (CycleListener) e.nextElement();
             j.cycleFinished(cycle);
         }
     }
 
-    protected void notifyRoundListeners(int round) {
+    private void notifyRoundListeners(int round) {
         for (Enumeration e = roundListeners.elements(); e.hasMoreElements(); ) {
             RoundListener j = (RoundListener) e.nextElement();
             j.roundResults(round);

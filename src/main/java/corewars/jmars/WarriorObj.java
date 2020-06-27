@@ -33,15 +33,15 @@ import java.awt.*;
 
 public class WarriorObj {
 
-    public Memory[] wInst;
-    public int wOffset;
-    public Color myColor;
-    public Color dColor;
-    public int numProc;
-    public boolean Alive;
-    protected int[] pSpace;
     protected String name;
     protected String author;
+    int numProc;
+    boolean Alive;
+    private Memory[] wInst;
+    private int wOffset;
+    private Color myColor;
+    private Color dColor;
+    private int[] pSpace;
 
     public WarriorObj(Memory[] warrior, int start, Color c, Color d) {
         myColor = c;
@@ -62,7 +62,6 @@ public class WarriorObj {
         this.Alive = alive;
         this.pSpace = new int[spaceSize];
         this.setPCell(pCellIndex, pCellValue);
-
     }
 
     public Memory[] getMemory(int coreSize) {
@@ -115,19 +114,8 @@ public class WarriorObj {
         return wOffset;
     }
 
-    public void initPSpace(int length) {
-        pSpace = new int[length];
-
-        return;
-    }
-
     public int[] getPSpace() {
         return pSpace;
-    }
-
-    public void setPSpace(int[] p) {
-        pSpace = p;
-        return;
     }
 
     public void normalizePSpace(int coreSize) {
@@ -138,25 +126,12 @@ public class WarriorObj {
 
             pSpace[i] %= coreSize;
         }
-
-        return;
     }
 
-    public int getPCell(int index) {
-        if (pSpace == null || index < 0 || index >= pSpace.length) {
-            return 0;
-        }
-
-        return pSpace[index];
-    }
-
-    public boolean setPCell(int index, int value) {
+    private void setPCell(int index, int value) {
         if (index < 0 || index >= pSpace.length) {
-            return false;
+            return;
         }
-
         pSpace[index] = value;
-
-        return true;
     }
 }
