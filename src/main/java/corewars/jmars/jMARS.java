@@ -41,7 +41,7 @@ import corewars.jmars.assembler.*;
  * jMARS is a corewars interpreter in which programs (warriors) battle in the
  * memory of a virtual machine (the MARS) and try to disable the other program.
  */
-public class jMARS extends Panel implements Runnable, WindowListener, FrontEndManager {
+public class jMARS extends Panel implements WindowListener, FrontEndManager {
 
     // constants
     static final int numDefinedColors = 4;
@@ -54,18 +54,6 @@ public class jMARS extends Panel implements Runnable, WindowListener, FrontEndMa
     String args[];
     static Frame myFrame;
     static jMARS myApp;
-
-    // Common variables
-    boolean useGui = false;
-    int maxProc;
-    int pSpaceSize;
-    int coreSize;
-    int cycles;
-    int rounds;
-    int maxWarriorLength;
-    int minWarriorDistance;
-    int numWarriors;
-    int minWarriors;
 
     WarriorObj allWarriors[];
     WarriorObj warriors[];
@@ -99,6 +87,9 @@ public class jMARS extends Panel implements Runnable, WindowListener, FrontEndMa
             System.out.println("usage: jMARS [options] warrior1.red [warrior2.red ...]");
             return;
         }
+
+        Config config = Config.CreateConfigFromArgs(args);
+
         myFrame = new Frame("jMARS");
         myFrame.setSize(new Dimension(1200, 900));
         myApp = new jMARS();
@@ -106,127 +97,73 @@ public class jMARS extends Panel implements Runnable, WindowListener, FrontEndMa
         myFrame.add(myApp);
         myFrame.addWindowListener(myApp);
         myFrame.show();
-        myApp.applicationInit();
+        myApp.applicationInit(config);
     }
 
     /**
      * Initialization function for the application.
      */
-    void applicationInit() {
-        boolean pspaceChanged = false;
-        Vector wArgs = new Vector();
-
-        // Set defaults for various constants
-        maxWarriorLength = 100;
-        minWarriorDistance = 100;
-        maxProc = 8000;
-        coreSize = 8000;
-        cycles = 80000;
-        rounds = 10;
-
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].charAt(0) == '-') {
-                switch(args[i]){
-                    case "-g":
-                        useGui = true;
-                        break;
-                    case "-s":
-                        coreSize = Integer.parseInt(args[++i]);
-                        break;
-                    case "-r":
-                        rounds = Integer.parseInt(args[++i]);
-                        break;
-                    case "-c":
-                        cycles = Integer.parseInt(args[++i]);
-                        break;
-                    case "-p":
-                        maxProc = Integer.parseInt(args[++i]);
-                        break;
-                    case "-l":
-                        maxWarriorLength = Integer.parseInt(args[++i]);
-                        break;
-                    case "-d":
-                        minWarriorDistance = Integer.parseInt(args[++i]);
-                        break;
-                    case "S":
-                        pSpaceSize = Integer.parseInt(args[++i]);
-                        pspaceChanged = true;
-                        break;
-                }
-            } else {
-                numWarriors++;
-                wArgs.addElement(new Integer(i));
-            }
-        }
-
-        if (!pspaceChanged) {
-            pSpaceSize = coreSize / 16;
-        }
-
-        if (numWarriors == 0) {
-            System.out.println("ERROR: no warrior files specified");
-        }
+    void applicationInit(Config config) {
 
         Assembler parser = new corewars.jmars.assembler.icws94p.ICWS94p();
-        parser.addConstant("coresize", Integer.toString(coreSize));
-        parser.addConstant("maxprocesses", Integer.toString(maxProc));
-        parser.addConstant("maxcycles", Integer.toString(cycles));
-        parser.addConstant("maxlength", Integer.toString(maxWarriorLength));
-        parser.addConstant("mindistance", Integer.toString(minWarriorDistance));
-        parser.addConstant("rounds", Integer.toString(rounds));
-        parser.addConstant("pspacesize", Integer.toString(pSpaceSize));
-        parser.addConstant("warriors", Integer.toString(numWarriors));
-        allWarriors = new WarriorObj[numWarriors];
+        parser.addConstant("coresize", Integer.toString(config.getCoreSize()));
+        parser.addConstant("maxprocesses", Integer.toString(config.getMaxProc()));
+        parser.addConstant("maxcycles", Integer.toString(config.getCycles()));
+        parser.addConstant("maxlength", Integer.toString(config.getMaxWarriorLength()));
+        parser.addConstant("mindistance", Integer.toString(config.getMinWarriorDistance()));
+        parser.addConstant("rounds", Integer.toString(config.getRounds()));
+        parser.addConstant("pspacesize", Integer.toString(config.getpSpaceSize()));
+        parser.addConstant("warriors", Integer.toString(config.getNumWarriors()));
+        allWarriors = new WarriorObj[config.getNumWarriors()];
 
-        for (int i = 0; i < numWarriors; i++) {
+        for (int i = 0; i < config.getNumWarriors(); i++) {
             try {
-                FileInputStream wFile = new FileInputStream(args[(((Integer) wArgs.elementAt(i)).intValue())]);
+                FileInputStream wFile = new FileInputStream(args[(((Integer) config.getwArgs().elementAt(i)).intValue())]);
                 try {
                     parser.parseWarrior(wFile);
-                    if (parser.length() > maxWarriorLength) {
-                        System.out.println("Error: warrior " + args[(((Integer) wArgs.elementAt(i)).intValue())] + " to large");
+                    if (parser.length() > config.getMaxWarriorLength()) {
+                        System.out.println("Error: warrior " + args[(((Integer) config.getwArgs().elementAt(i)).intValue())] + " to large");
                         System.exit(0);
                     }
                     allWarriors[i] = new WarriorObj(parser.getWarrior(), parser.getStart(), wColors[i % numDefinedColors][0], wColors[i % numDefinedColors][1]);
                     allWarriors[i].setName(parser.getName());
                     allWarriors[i].setAuthor(parser.getAuthor());
                     allWarriors[i].Alive = true;
-                    allWarriors[i].initPSpace(pSpaceSize);
+                    allWarriors[i].initPSpace(config.getpSpaceSize());
                     allWarriors[i].setPCell(0, -1);
                 } catch (AssemblerException ae) {
-                    System.out.println("Error parsing warrior file " + args[(((Integer) wArgs.elementAt(i)).intValue())]);
+                    System.out.println("Error parsing warrior file " + args[(((Integer) config.getwArgs().elementAt(i)).intValue())]);
                     System.out.println(ae.toString());
                     System.exit(0);
                 } catch (IOException ioe) {
-                    System.out.println("IO error while parsing warrior file " + args[(((Integer) wArgs.elementAt(i)).intValue())]);
+                    System.out.println("IO error while parsing warrior file " + args[(((Integer) config.getwArgs().elementAt(i)).intValue())]);
                     System.exit(0);
                 }
             } catch (FileNotFoundException e) {
-                System.out.println("Could not find warrior file " + args[(((Integer) wArgs.elementAt(i)).intValue())]);
+                System.out.println("Could not find warrior file " + args[(((Integer) config.getwArgs().elementAt(i)).intValue())]);
                 System.exit(0);
             }
         }
-        if (useGui)
+        if (config.useGui())
         {
-            coreDisplay = new CoreDisplay(this, this, coreSize, 100);
+            coreDisplay = new CoreDisplay(this, this, config.getCoreSize(), 100);
         }
         roundCycleCounter = new RoundCycleCounter(this, this);
         validate();
         repaint();
         update(getGraphics());
-        MARS = new MarsVM(coreSize, maxProc);
-        loadWarriors();
-        minWarriors = (numWarriors == 1) ? 0 : 1;
-        myThread = new Thread(this);
+        MARS = new MarsVM(config.getCoreSize(), config.getMaxProc());
+        loadWarriors(config);
+        config.setMinWarriors((config.getNumWarriors() == 1) ? 0 : 1);
+        myThread = new Thread(() -> run(config));
         myThread.setPriority(Thread.NORM_PRIORITY - 1);
         myThread.start();
-        return;
     }
 
     /**
      * main function and loop for jMARS. Runs the battles and handles display.
      */
-    public void run() {
+    public void run(Config config) {
         HashMap<String, Integer> statistic = new HashMap<>();
         Date startTime;
         Date endTime;
@@ -237,13 +174,13 @@ public class jMARS extends Panel implements Runnable, WindowListener, FrontEndMa
         int totalCycles = 0;
         tStartTime = new Date();
         startTime = new Date();
-        if (useGui)
+        if (config.useGui())
         {
             coreDisplay.clear();
         }
-        for (int roundNum = 0; roundNum < rounds; roundNum++) {
+        for (int roundNum = 0; roundNum < config.getRounds(); roundNum++) {
             int cycleNum = 0;
-            for (; cycleNum < cycles; cycleNum++) {
+            for (; cycleNum < config.getCycles(); cycleNum++) {
                 for (int warRun = 0; warRun < runWarriors; warRun++) {
                     StepReport stats = MARS.step();
                     stats.warrior.numProc = stats.numProc;
@@ -265,7 +202,7 @@ public class jMARS extends Panel implements Runnable, WindowListener, FrontEndMa
                 }
                 notifyCycleListeners(cycleNum);
                 repaint();
-                if (runWarriors <= minWarriors) {
+                if (runWarriors <= config.getMinWarriors()) {
                     break;
                 }
             }
@@ -286,8 +223,8 @@ public class jMARS extends Panel implements Runnable, WindowListener, FrontEndMa
                 break;
             }
             MARS.reset();
-            loadWarriors();
-            if (useGui)
+            loadWarriors(config);
+            if (config.useGui())
             {
                 coreDisplay.clear();
             }
@@ -305,28 +242,28 @@ public class jMARS extends Panel implements Runnable, WindowListener, FrontEndMa
     /**
      * Load warriors into core
      */
-    void loadWarriors() {
+    void loadWarriors(Config config) {
         warriors = new WarriorObj[allWarriors.length];
         System.arraycopy(allWarriors, 0, warriors, 0, allWarriors.length);
-        runWarriors = numWarriors;
+        runWarriors = config.getNumWarriors();
         int[] location = new int[warriors.length];
 
         if (!MARS.loadWarrior(warriors[0], 0)) {
             System.out.println("ERROR: could not load warrior 1.");
         }
 
-        for (int i = 1, r = 0; i < numWarriors; i++) {
+        for (int i = 1, r = 0; i < config.getNumWarriors(); i++) {
             boolean validSpot;
             do {
                 validSpot = true;
-                r = (int) (Math.random() * coreSize);
+                r = (int) (Math.random() * config.getCoreSize());
 
-                if (r < minWarriorDistance || r > (coreSize - minWarriorDistance)) {
+                if (r < config.getMinWarriorDistance() || r > (config.getCoreSize() - config.getMinWarriorDistance())) {
                     validSpot = false;
                 }
 
                 for (int j = 0; j < location.length; j++) {
-                    if (r < (minWarriorDistance + location[j]) && r > (minWarriorDistance + location[j])) {
+                    if (r < (config.getMinWarriorDistance() + location[j]) && r > (config.getMinWarriorDistance() + location[j])) {
                         validSpot = false;
                     }
                 }
