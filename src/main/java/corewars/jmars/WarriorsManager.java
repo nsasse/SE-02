@@ -51,7 +51,7 @@ public class WarriorsManager {
 
     public Result<WarriorObj[]> readWarriorsFromFile(Config config, Assembler parser, Color[][] wColors, int numDefinedColors, String[] args) {
 
-        WarriorObj allWarriors[] = new WarriorObj[config.getNumWarriors()];
+        WarriorObj[] allWarriors = new WarriorObj[config.getNumWarriors()];
 
         for (int i = 0; i < config.getNumWarriors(); i++) {
             try {

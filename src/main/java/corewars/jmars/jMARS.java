@@ -27,13 +27,15 @@
 package corewars.jmars;
 
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-
-import corewars.jmars.marsVM.*;
+import corewars.jmars.assembler.Assembler;
 import corewars.jmars.frontend.*;
-import corewars.jmars.assembler.*;
+import corewars.jmars.marsVM.MarsVM;
+import corewars.jmars.marsVM.VM;
+
+import java.awt.*;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.util.*;
 
 /**
  * jMARS is a corewars interpreter in which programs (warriors) battle in the
@@ -43,30 +45,25 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
 
     // constants
     static final int numDefinedColors = 4;
-    static final Color wColors[][] = {{Color.green, Color.yellow},
+    static final Color[][] wColors = {{Color.green, Color.yellow},
             {Color.red, Color.magenta},
             {Color.cyan, Color.blue},
             {Color.gray, Color.darkGray}};
-
-    // Application specific variables
-    String args[];
     static Frame myFrame;
     static jMARS myApp;
-
+    static Thread myThread;
+    static boolean exitFlag;
+    // Application specific variables
+    String[] args;
     /**
      * Load warriors into core
      */
 
-    WarriorObj warriors[];
+    WarriorObj[] warriors;
     CoreDisplay coreDisplay;
     RoundCycleCounter roundCycleCounter;
     VM MARS;
-
     int runWarriors;
-
-    static Thread myThread;
-    static boolean exitFlag;
-
     Vector stepListeners;
     Vector cycleListeners;
     Vector roundListeners;
@@ -83,11 +80,11 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
      *
      * @param java.lang.String[] a - array of command line arguments
      */
-    public static void main(String args[]) {
+    public static void main(String[] args) {
 
         Result<Config> result = Config.CreateConfigFromArgs(args);
 
-        if(!result.isOk()){
+        if (!result.isOk()) {
             System.out.println(result.getMessage());
             return;
         }
@@ -107,21 +104,20 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
      */
     void applicationInit(Config config) {
 
-        Assembler parser  = parseConstants(config);
+        Assembler parser = parseConstants(config);
 
         WarriorsManager wm = new WarriorsManager();
 
         Result<WarriorObj[]> result = wm.readWarriorsFromFile(config, parser, wColors, numDefinedColors, args);
 
-        if(!result.isOk()){
+        if (!result.isOk()) {
             System.out.println(result.getMessage());
             return;
         }
 
         WarriorObj[] allWarriors = result.getValue();
 
-        if (config.useGui())
-        {
+        if (config.useGui()) {
             coreDisplay = new CoreDisplay(this, this, config.getCoreSize(), 100);
         }
         roundCycleCounter = new RoundCycleCounter(this, this);
@@ -132,7 +128,7 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
 
         Result<WarriorObj[]> warriorsResult = wm.loadWarriors(config, MARS, allWarriors);
 
-        if(!warriorsResult.isOk()){
+        if (!warriorsResult.isOk()) {
             System.out.println(warriorsResult.getMessage());
             return;
         }
@@ -174,8 +170,7 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
         int totalCycles = 0;
         tStartTime = new Date();
         startTime = new Date();
-        if (config.useGui())
-        {
+        if (config.useGui()) {
             coreDisplay.clear();
         }
         for (int roundNum = 0; roundNum < config.getRounds(); roundNum++) {
@@ -188,14 +183,12 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
                         stats.warrior.Alive = false;
                         runWarriors--;
                         ArrayList<WarriorObj> tmp = new ArrayList<>();
-                        for (int warIdx = 0; warIdx < warriors.length; warIdx++)
-                        {
-                            if (warIdx != warRun)
-                            {
+                        for (int warIdx = 0; warIdx < warriors.length; warIdx++) {
+                            if (warIdx != warRun) {
                                 tmp.add(warriors[warIdx]);
                             }
                         }
-                        warriors = tmp.toArray(new WarriorObj[] { });
+                        warriors = tmp.toArray(new WarriorObj[]{});
                         break;
                     }
                     notifyStepListeners(stats);
@@ -206,8 +199,7 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
                     break;
                 }
             }
-            for (int warIdx = 0; warIdx < warriors.length; warIdx++)
-            {
+            for (int warIdx = 0; warIdx < warriors.length; warIdx++) {
                 String name = warriors[warIdx].getName();
                 Integer count = statistic.getOrDefault(name, Integer.valueOf(0));
                 count++;
@@ -216,7 +208,7 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
             notifyRoundListeners(roundNum);
             endTime = new Date();
             roundTime = ((double) endTime.getTime() - (double) startTime.getTime()) / 1000;
-            System.out.println(roundNum+1 + ". Round time=" + roundTime + " Cycles=" + cycleNum + " avg. time/cycle=" + (roundTime / cycleNum));
+            System.out.println(roundNum + 1 + ". Round time=" + roundTime + " Cycles=" + cycleNum + " avg. time/cycle=" + (roundTime / cycleNum));
             startTime = new Date();
             totalCycles += cycleNum;
             if (exitFlag) {
@@ -228,7 +220,7 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
 
             Result<WarriorObj[]> warriorsResult = wm.loadWarriors(config, MARS, allWarriors);
 
-            if(!warriorsResult.isOk()){
+            if (!warriorsResult.isOk()) {
                 System.out.println(warriorsResult.getMessage());
                 return;
             }
@@ -236,8 +228,7 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
             warriors = warriorsResult.getValue();
             runWarriors = config.getNumWarriors();
 
-            if (config.useGui())
-            {
+            if (config.useGui()) {
                 coreDisplay.clear();
             }
         }
@@ -245,8 +236,7 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
         totalTime = ((double) tEndTime.getTime() - (double) tStartTime.getTime()) / 1000;
         System.out.println("Total time=" + totalTime + " Total Cycles=" + totalCycles + " avg. time/cycle=" + (totalTime / totalCycles));
         System.out.println("Survivor in how many rounds:");
-        for (String name : statistic.keySet())
-        {
+        for (String name : statistic.keySet()) {
             System.out.println("  " + name + ": " + statistic.get(name));
         }
     }
@@ -289,21 +279,21 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
     }
 
     protected void notifyStepListeners(StepReport step) {
-        for (Enumeration e = stepListeners.elements(); e.hasMoreElements();) {
+        for (Enumeration e = stepListeners.elements(); e.hasMoreElements(); ) {
             StepListener j = (StepListener) e.nextElement();
             j.stepProcess(step);
         }
     }
 
     protected void notifyCycleListeners(int cycle) {
-        for (Enumeration e = cycleListeners.elements(); e.hasMoreElements();) {
+        for (Enumeration e = cycleListeners.elements(); e.hasMoreElements(); ) {
             CycleListener j = (CycleListener) e.nextElement();
             j.cycleFinished(cycle);
         }
     }
 
     protected void notifyRoundListeners(int round) {
-        for (Enumeration e = roundListeners.elements(); e.hasMoreElements();) {
+        for (Enumeration e = roundListeners.elements(); e.hasMoreElements(); ) {
             RoundListener j = (RoundListener) e.nextElement();
             j.roundResults(round);
         }

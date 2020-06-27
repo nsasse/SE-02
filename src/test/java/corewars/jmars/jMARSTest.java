@@ -1,23 +1,23 @@
 package corewars.jmars;
 
-import java.io.PrintStream;
 import org.junit.jupiter.api.AfterEach;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.io.PrintStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Simple Unit Tests for jMARS.
  */
-public class jMARSTest 
-{
+public class jMARSTest {
     private CopyPrintStream copyOut;
     private PrintStream originalOut;
-    
+
     @BeforeEach
-    public void setUpStreams() 
-    {
+    public void setUpStreams() {
         originalOut = System.out;
         copyOut = new CopyPrintStream(originalOut);
         System.setOut(copyOut);
@@ -27,7 +27,7 @@ public class jMARSTest
     public void restoreStreams() {
         System.setOut(originalOut);
     }
-    
+
     @Test
     public void testStdOutCopy() {
         System.out.println("stdout redirected");
@@ -36,7 +36,7 @@ public class jMARSTest
 
     @Test
     public void testDwarf2vsImp() throws InterruptedException {
-        jMARS.main(new String[] { "war\\dwarf2.red", "war\\imp.red" });
+        jMARS.main(new String[]{"war\\dwarf2.red", "war\\imp.red"});
         Thread.sleep(2000); // Wait until all war rounds are finished ;-)
         assertTrue(copyOut.getTrimmedContent().endsWith("Next Dwarf: 10"), "Wrong statistic result: <" + copyOut.getTrimmedContent() + ">");
     }

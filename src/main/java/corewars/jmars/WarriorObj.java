@@ -29,24 +29,19 @@
  */
 package corewars.jmars;
 
-import corewars.jmars.assembler.Assembler;
-
-import java.awt.Color;
-import java.io.Reader;
+import java.awt.*;
 
 public class WarriorObj {
 
-    public Memory wInst[];
+    public Memory[] wInst;
     public int wOffset;
-    protected int[] pSpace;
-
-    protected String name;
-    protected String author;
-
     public Color myColor;
     public Color dColor;
     public int numProc;
     public boolean Alive;
+    protected int[] pSpace;
+    protected String name;
+    protected String author;
 
     public WarriorObj(Memory[] warrior, int start, Color c, Color d) {
         myColor = c;
@@ -56,7 +51,7 @@ public class WarriorObj {
         wOffset = start;
     }
 
-    public WarriorObj(Memory[] warrior, int start, Color c, Color d, String name, String author, boolean alive, int spaceSize, int pCellIndex, int pCellValue){
+    public WarriorObj(Memory[] warrior, int start, Color c, Color d, String name, String author, boolean alive, int spaceSize, int pCellIndex, int pCellValue) {
         myColor = c;
         dColor = d;
 
@@ -130,6 +125,11 @@ public class WarriorObj {
         return pSpace;
     }
 
+    public void setPSpace(int[] p) {
+        pSpace = p;
+        return;
+    }
+
     public void normalizePSpace(int coreSize) {
         for (int i = 0; i < pSpace.length; i++) {
             while (pSpace[i] < 0) {
@@ -139,11 +139,6 @@ public class WarriorObj {
             pSpace[i] %= coreSize;
         }
 
-        return;
-    }
-
-    public void setPSpace(int[] p) {
-        pSpace = p;
         return;
     }
 
