@@ -15,7 +15,7 @@ public class Config {
     private int minWarriors;
     private Vector wArgs;
 
-    public Config(){
+    public Config() {
         this.useGui = false;
         this.maxWarriorLength = 100;
         this.minWarriorDistance = 100;
@@ -26,7 +26,7 @@ public class Config {
         this.wArgs = new Vector();
     }
 
-    public static Result<Config> CreateConfigFromArgs(String[]args){
+    public static Result<Config> CreateConfigFromArgs(String[] args) {
 
         if (args.length == 0) {
             return new Result<>(false, "usage: jMARS [options] warrior1.red [warrior2.red ...]");
@@ -38,7 +38,7 @@ public class Config {
 
         for (int i = 0; i < args.length; i++) {
             if (args[i].charAt(0) == '-') {
-                switch(args[i]){
+                switch (args[i]) {
                     case "-g":
                         config.useGui = true;
                         break;
@@ -124,11 +124,11 @@ public class Config {
         return minWarriors;
     }
 
-    public Vector getwArgs() {
-        return wArgs;
-    }
-
     public void setMinWarriors(int minWarriors) {
         this.minWarriors = minWarriors;
+    }
+
+    public Vector getwArgs() {
+        return wArgs;
     }
 }

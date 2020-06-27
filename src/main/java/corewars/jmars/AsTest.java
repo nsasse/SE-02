@@ -30,52 +30,83 @@
  */
 package corewars.jmars;
 
-import java.io.*;
-import java.awt.Color;
+import corewars.jmars.assembler.Assembler;
+import corewars.jmars.assembler.AssemblerException;
 
-import corewars.jmars.assembler.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class AsTest {
 
-    public static void main(String args[]) {
-        if (args.length < 1) {
-            System.out.println("usage: AsTest filename");
+    public static void main(String[] args) {
+
+        Result<FileInputStream> resultFile = getFileStreamFromArgs(args);
+
+        if (!resultFile.isOk()) {
+            System.out.println(resultFile.getMessage());
             return;
         }
+
+        Result<String> resultOutput = createOutput(resultFile.getValue());
+
+        if (!resultOutput.isOk()) {
+            System.out.println(resultOutput.getMessage());
+            return;
+        }
+
+        System.out.println(resultOutput.getMessage());
+    }
+
+    private static Result<String> createOutput(FileInputStream file) {
+
+        StringBuilder sb = new StringBuilder();
+
 
         try {
-            FileInputStream file = new FileInputStream(args[0]);
-            Memory warrior[];
+            Assembler parser = new corewars.jmars.assembler.icws94p.ICWS94p();
 
-            try {
-                Assembler parser = new corewars.jmars.assembler.icws94p.ICWS94p();
-                //Assembler parser = new Simple();
+            parser.parseWarrior(file);
 
-                parser.parseWarrior(file);
+            sb.append(";name " + parser.getName() + "\n");
+            sb.append(";author " + parser.getAuthor() + "\n");
+            sb.append("ORG	" + parser.getStart() + "\n");
 
-                System.out.println(";name " + parser.getName());
-                System.out.println(";author " + parser.getAuthor() + "\n");
-                System.out.println("ORG	" + parser.getStart());
-                warrior = parser.getWarrior();
+            Memory[] warrior = parser.getWarrior();
 
-                for (int i = 0; i < warrior.length; i++) {
-                    System.out.println(warrior[i]);
-                }
-
-            } catch (AssemblerException ae) {
-                System.out.println("Error parsing warrior file.");
-                System.out.print(ae.toString());
-                return;
-            } catch (IOException ioe) {
-                System.out.print(ioe.toString());
-                return;
+            for (int i = 0; i < warrior.length; i++) {
+                sb.append(warrior[i] + "\n");
             }
 
-        } catch (FileNotFoundException e) {
-            System.out.println("file could not be opened");
-            return;
+        } catch (AssemblerException ae) {
+            return new Result<>(false, "Error parsing warrior file.\n" + ae.toString());
+        } catch (IOException ioe) {
+            return new Result<>(false, ioe.toString());
         }
 
-        return;
+        return new Result<>(true, sb.toString());
     }
-};
+
+    private static Result<FileInputStream> getFileStreamFromArgs(String[] args) {
+        if (args.length != 1) {
+            return new Result<>(false, "usage: AsTest filename");
+        }
+
+        File file = new File(args[0]);
+
+        if (!file.exists()) {
+            return new Result<>(false, "File " + file.getAbsolutePath() + " doesn't exist.");
+        }
+
+        FileInputStream fileStream;
+
+        try {
+            fileStream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            return new Result<>(false, "file could not be opened");
+        }
+
+        return new Result<>(true, fileStream);
+    }
+}
