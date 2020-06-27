@@ -30,7 +30,6 @@ package corewars.jmars;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import java.net.URL;
 import java.io.*;
 
 import corewars.jmars.marsVM.*;
@@ -54,6 +53,11 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
     String args[];
     static Frame myFrame;
     static jMARS myApp;
+
+    /**
+     * Load warriors into core
+     */
+    WarriorsLogic warriorsLogic = new WarriorsLogic();
 
     WarriorObj allWarriors[];
     WarriorObj warriors[];
@@ -154,7 +158,9 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
         repaint();
         update(getGraphics());
         MARS = new MarsVM(config.getCoreSize(), config.getMaxProc());
-        loadWarriors(config);
+        WarriorsLogic warriorsLogic = WarriorsLogic.load(config, runWarriors, MARS, allWarriors, warriors);
+        runWarriors = warriorsLogic.runWarriors;
+        warriors = warriorsLogic.warriors;
         config.setMinWarriors((config.getNumWarriors() == 1) ? 0 : 1);
         myThread = new Thread(() -> run(config));
         myThread.setPriority(Thread.NORM_PRIORITY - 1);
@@ -224,7 +230,9 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
                 break;
             }
             MARS.reset();
-            loadWarriors(config);
+            WarriorsLogic warriorsLogic = WarriorsLogic.load(config, runWarriors, MARS, allWarriors, warriors);
+            runWarriors = warriorsLogic.runWarriors;
+            warriors = warriorsLogic.warriors;
             if (config.useGui())
             {
                 coreDisplay.clear();
@@ -237,42 +245,6 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
         for (String name : statistic.keySet())
         {
             System.out.println("  " + name + ": " + statistic.get(name));
-        }
-    }
-
-    /**
-     * Load warriors into core
-     */
-    void loadWarriors(Config config) {
-        warriors = new WarriorObj[allWarriors.length];
-        System.arraycopy(allWarriors, 0, warriors, 0, allWarriors.length);
-        runWarriors = config.getNumWarriors();
-        int[] location = new int[warriors.length];
-
-        if (!MARS.loadWarrior(warriors[0], 0)) {
-            System.out.println("ERROR: could not load warrior 1.");
-        }
-
-        for (int i = 1, r = 0; i < config.getNumWarriors(); i++) {
-            boolean validSpot;
-            do {
-                validSpot = true;
-                r = (int) (Math.random() * config.getCoreSize());
-
-                if (r < config.getMinWarriorDistance() || r > (config.getCoreSize() - config.getMinWarriorDistance())) {
-                    validSpot = false;
-                }
-
-                for (int j = 0; j < location.length; j++) {
-                    if (r < (config.getMinWarriorDistance() + location[j]) && r > (config.getMinWarriorDistance() + location[j])) {
-                        validSpot = false;
-                    }
-                }
-            } while (!validSpot);
-
-            if (!MARS.loadWarrior(warriors[i], r)) {
-                System.out.println("ERROR: could not load warrior " + (i + 1) + ".");
-            }
         }
     }
 
