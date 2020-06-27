@@ -83,12 +83,13 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
      * @param java.lang.String[] a - array of command line arguments
      */
     public static void main(String args[]) {
-        if (args.length == 0) {
-            System.out.println("usage: jMARS [options] warrior1.red [warrior2.red ...]");
+
+        Result<Config> result = Config.CreateConfigFromArgs(args);
+
+        if(!result.isOk()){
+            System.out.println(result.getMessage());
             return;
         }
-
-        Config config = Config.CreateConfigFromArgs(args);
 
         myFrame = new Frame("jMARS");
         myFrame.setSize(new Dimension(1200, 900));
@@ -97,7 +98,7 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
         myFrame.add(myApp);
         myFrame.addWindowListener(myApp);
         myFrame.show();
-        myApp.applicationInit(config);
+        myApp.applicationInit(result.getValue());
     }
 
     /**

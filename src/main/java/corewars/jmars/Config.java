@@ -26,7 +26,12 @@ public class Config {
         this.wArgs = new Vector();
     }
 
-    public static Config CreateConfigFromArgs(String[]args){
+    public static Result<Config> CreateConfigFromArgs(String[]args){
+
+        if (args.length == 0) {
+            return new Result<>(false, "usage: jMARS [options] warrior1.red [warrior2.red ...]");
+        }
+
         Config config = new Config();
 
         boolean pspaceChanged = false;
@@ -59,6 +64,8 @@ public class Config {
                         config.pSpaceSize = Integer.parseInt(args[++i]);
                         pspaceChanged = true;
                         break;
+                    default:
+                        return new Result<>(false, "Invalid program argument: " + args[i]);
                 }
             } else {
                 config.numWarriors++;
@@ -71,10 +78,10 @@ public class Config {
         }
 
         if (config.numWarriors == 0) {
-            System.out.println("ERROR: no warrior files specified");
+            return new Result<>(false, "ERROR: no warrior files specified");
         }
 
-        return config;
+        return new Result<>(true, config);
     }
 
     public boolean useGui() {
