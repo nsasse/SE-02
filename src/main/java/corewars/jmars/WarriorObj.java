@@ -56,6 +56,20 @@ public class WarriorObj {
         wOffset = start;
     }
 
+    public WarriorObj(Memory[] warrior, int start, Color c, Color d, String name, String author, boolean alive, int spaceSize, int pCellIndex, int pCellValue){
+        myColor = c;
+        dColor = d;
+
+        wInst = warrior;
+        wOffset = start;
+        this.name = name;
+        this.author = author;
+        this.Alive = alive;
+        this.pSpace = new int[spaceSize];
+        this.setPCell(pCellIndex, pCellValue);
+
+    }
+
     public Memory[] getMemory(int coreSize) {
         Memory[] wNormal = new Memory[wInst.length];
 

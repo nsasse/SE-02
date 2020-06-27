@@ -57,7 +57,6 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
     /**
      * Load warriors into core
      */
-    WarriorsLogic warriorsLogic = new WarriorsLogic();
 
     WarriorObj allWarriors[];
     WarriorObj warriors[];
@@ -130,12 +129,7 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
                         System.out.println("Error: warrior " + args[(((Integer) config.getwArgs().elementAt(i)).intValue())] + " to large");
                         System.exit(0);
                     }
-                    allWarriors[i] = new WarriorObj(parser.getWarrior(), parser.getStart(), wColors[i % numDefinedColors][0], wColors[i % numDefinedColors][1]);
-                    allWarriors[i].setName(parser.getName());
-                    allWarriors[i].setAuthor(parser.getAuthor());
-                    allWarriors[i].Alive = true;
-                    allWarriors[i].initPSpace(config.getpSpaceSize());
-                    allWarriors[i].setPCell(0, -1);
+                    allWarriors[i] = new WarriorObj(parser.getWarrior(), parser.getStart(), wColors[i % numDefinedColors][0], wColors[i % numDefinedColors][1], parser.getName(), parser.getAuthor(), true, config.getpSpaceSize(), 0, -1);
                 } catch (AssemblerException ae) {
                     System.out.println("Error parsing warrior file " + args[(((Integer) config.getwArgs().elementAt(i)).intValue())]);
                     System.out.println(ae.toString());
@@ -158,9 +152,9 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
         repaint();
         update(getGraphics());
         MARS = new MarsVM(config.getCoreSize(), config.getMaxProc());
-        WarriorsLogic warriorsLogic = WarriorsLogic.load(config, runWarriors, MARS, allWarriors, warriors);
-        runWarriors = warriorsLogic.runWarriors;
-        warriors = warriorsLogic.warriors;
+        WarriorManager warriorManager = WarriorManager.load(config, runWarriors, MARS, allWarriors, warriors);
+        runWarriors = warriorManager.runWarriors;
+        warriors = warriorManager.warriors;
         config.setMinWarriors((config.getNumWarriors() == 1) ? 0 : 1);
         myThread = new Thread(() -> run(config));
         myThread.setPriority(Thread.NORM_PRIORITY - 1);
@@ -230,9 +224,9 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
                 break;
             }
             MARS.reset();
-            WarriorsLogic warriorsLogic = WarriorsLogic.load(config, runWarriors, MARS, allWarriors, warriors);
-            runWarriors = warriorsLogic.runWarriors;
-            warriors = warriorsLogic.warriors;
+            WarriorManager warriorManager = WarriorManager.load(config, runWarriors, MARS, allWarriors, warriors);
+            runWarriors = warriorManager.runWarriors;
+            warriors = warriorManager.warriors;
             if (config.useGui())
             {
                 coreDisplay.clear();
