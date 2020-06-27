@@ -30,7 +30,6 @@ package corewars.jmars;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import java.io.*;
 
 import corewars.jmars.marsVM.*;
 import corewars.jmars.frontend.*;
@@ -58,7 +57,6 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
      * Load warriors into core
      */
 
-    WarriorObj allWarriors[];
     WarriorObj warriors[];
     CoreDisplay coreDisplay;
     RoundCycleCounter roundCycleCounter;
@@ -118,31 +116,18 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
         parser.addConstant("rounds", Integer.toString(config.getRounds()));
         parser.addConstant("pspacesize", Integer.toString(config.getpSpaceSize()));
         parser.addConstant("warriors", Integer.toString(config.getNumWarriors()));
-        allWarriors = new WarriorObj[config.getNumWarriors()];
 
-        for (int i = 0; i < config.getNumWarriors(); i++) {
-            try {
-                FileInputStream wFile = new FileInputStream(args[(((Integer) config.getwArgs().elementAt(i)).intValue())]);
-                try {
-                    parser.parseWarrior(wFile);
-                    if (parser.length() > config.getMaxWarriorLength()) {
-                        System.out.println("Error: warrior " + args[(((Integer) config.getwArgs().elementAt(i)).intValue())] + " to large");
-                        System.exit(0);
-                    }
-                    allWarriors[i] = new WarriorObj(parser.getWarrior(), parser.getStart(), wColors[i % numDefinedColors][0], wColors[i % numDefinedColors][1], parser.getName(), parser.getAuthor(), true, config.getpSpaceSize(), 0, -1);
-                } catch (AssemblerException ae) {
-                    System.out.println("Error parsing warrior file " + args[(((Integer) config.getwArgs().elementAt(i)).intValue())]);
-                    System.out.println(ae.toString());
-                    System.exit(0);
-                } catch (IOException ioe) {
-                    System.out.println("IO error while parsing warrior file " + args[(((Integer) config.getwArgs().elementAt(i)).intValue())]);
-                    System.exit(0);
-                }
-            } catch (FileNotFoundException e) {
-                System.out.println("Could not find warrior file " + args[(((Integer) config.getwArgs().elementAt(i)).intValue())]);
-                System.exit(0);
-            }
+        WarriorsManager wm = new WarriorsManager();
+
+        Result<WarriorObj[]> result = wm.readWarriorsFromFile(config, parser, wColors, numDefinedColors, args);
+
+        if(!result.isOk()){
+            System.out.println(result.getMessage());
+            return;
         }
+
+        WarriorObj[] allWarriors = result.getValue();
+
         if (config.useGui())
         {
             coreDisplay = new CoreDisplay(this, this, config.getCoreSize(), 100);
@@ -152,11 +137,19 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
         repaint();
         update(getGraphics());
         MARS = new MarsVM(config.getCoreSize(), config.getMaxProc());
-        WarriorManager warriorManager = WarriorManager.load(config, runWarriors, MARS, allWarriors, warriors);
-        runWarriors = warriorManager.runWarriors;
-        warriors = warriorManager.warriors;
+
+        Result<WarriorObj[]> warriorsResult = wm.loadWarriors(config, MARS, allWarriors);
+
+        if(!warriorsResult.isOk()){
+            System.out.println(warriorsResult.getMessage());
+            return;
+        }
+
+        warriors = result.getValue();
+        runWarriors = config.getNumWarriors();
+
         config.setMinWarriors((config.getNumWarriors() == 1) ? 0 : 1);
-        myThread = new Thread(() -> run(config));
+        myThread = new Thread(() -> run(config, allWarriors));
         myThread.setPriority(Thread.NORM_PRIORITY - 1);
         myThread.start();
     }
@@ -164,7 +157,7 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
     /**
      * main function and loop for jMARS. Runs the battles and handles display.
      */
-    public void run(Config config) {
+    public void run(Config config, WarriorObj[] allWarriors) {
         HashMap<String, Integer> statistic = new HashMap<>();
         Date startTime;
         Date endTime;
@@ -224,9 +217,19 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
                 break;
             }
             MARS.reset();
-            WarriorManager warriorManager = WarriorManager.load(config, runWarriors, MARS, allWarriors, warriors);
-            runWarriors = warriorManager.runWarriors;
-            warriors = warriorManager.warriors;
+
+            WarriorsManager wm = new WarriorsManager();
+
+            Result<WarriorObj[]> warriorsResult = wm.loadWarriors(config, MARS, allWarriors);
+
+            if(!warriorsResult.isOk()){
+                System.out.println(warriorsResult.getMessage());
+                return;
+            }
+
+            warriors = warriorsResult.getValue();
+            runWarriors = config.getNumWarriors();
+
             if (config.useGui())
             {
                 coreDisplay.clear();
