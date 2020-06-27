@@ -107,15 +107,7 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
      */
     void applicationInit(Config config) {
 
-        Assembler parser = new corewars.jmars.assembler.icws94p.ICWS94p();
-        parser.addConstant("coresize", Integer.toString(config.getCoreSize()));
-        parser.addConstant("maxprocesses", Integer.toString(config.getMaxProc()));
-        parser.addConstant("maxcycles", Integer.toString(config.getCycles()));
-        parser.addConstant("maxlength", Integer.toString(config.getMaxWarriorLength()));
-        parser.addConstant("mindistance", Integer.toString(config.getMinWarriorDistance()));
-        parser.addConstant("rounds", Integer.toString(config.getRounds()));
-        parser.addConstant("pspacesize", Integer.toString(config.getpSpaceSize()));
-        parser.addConstant("warriors", Integer.toString(config.getNumWarriors()));
+        Assembler parser  = parseConstants(config);
 
         WarriorsManager wm = new WarriorsManager();
 
@@ -152,6 +144,20 @@ public class jMARS extends Panel implements WindowListener, FrontEndManager {
         myThread = new Thread(() -> run(config, allWarriors));
         myThread.setPriority(Thread.NORM_PRIORITY - 1);
         myThread.start();
+    }
+
+    private Assembler parseConstants(Config config) {
+        Assembler parser = new corewars.jmars.assembler.icws94p.ICWS94p();
+        parser.addConstant("coresize", Integer.toString(config.getCoreSize()));
+        parser.addConstant("maxprocesses", Integer.toString(config.getMaxProc()));
+        parser.addConstant("maxcycles", Integer.toString(config.getCycles()));
+        parser.addConstant("maxlength", Integer.toString(config.getMaxWarriorLength()));
+        parser.addConstant("mindistance", Integer.toString(config.getMinWarriorDistance()));
+        parser.addConstant("rounds", Integer.toString(config.getRounds()));
+        parser.addConstant("pspacesize", Integer.toString(config.getpSpaceSize()));
+        parser.addConstant("warriors", Integer.toString(config.getNumWarriors()));
+
+        return parser;
     }
 
     /**
