@@ -126,23 +126,32 @@ public class jMARS extends Panel implements Runnable, WindowListener, FrontEndMa
 
         for (int i = 0; i < args.length; i++) {
             if (args[i].charAt(0) == '-') {
-                if (args[i].equals("-g")) {
-                    useGui = true;
-                } else if (args[i].equals("-r")) {
-                    rounds = Integer.parseInt(args[++i]);
-                } else if (args[i].equals("-s")) {
-                    coreSize = Integer.parseInt(args[++i]);
-                } else if (args[i].equals("-c")) {
-                    cycles = Integer.parseInt(args[++i]);
-                } else if (args[i].equals("-p")) {
-                    maxProc = Integer.parseInt(args[++i]);
-                } else if (args[i].equals("-l")) {
-                    maxWarriorLength = Integer.parseInt(args[++i]);
-                } else if (args[i].equals("-d")) {
-                    minWarriorDistance = Integer.parseInt(args[++i]);
-                } else if (args[i].equals("-S")) {
-                    pSpaceSize = Integer.parseInt(args[++i]);
-                    pspaceChanged = true;
+                switch(args[i]){
+                    case "-g":
+                        useGui = true;
+                        break;
+                    case "-s":
+                        coreSize = Integer.parseInt(args[++i]);
+                        break;
+                    case "-r":
+                        rounds = Integer.parseInt(args[++i]);
+                        break;
+                    case "-c":
+                        cycles = Integer.parseInt(args[++i]);
+                        break;
+                    case "-p":
+                        maxProc = Integer.parseInt(args[++i]);
+                        break;
+                    case "-l":
+                        maxWarriorLength = Integer.parseInt(args[++i]);
+                        break;
+                    case "-d":
+                        minWarriorDistance = Integer.parseInt(args[++i]);
+                        break;
+                    case "S":
+                        pSpaceSize = Integer.parseInt(args[++i]);
+                        pspaceChanged = true;
+                        break;
                 }
             } else {
                 numWarriors++;
